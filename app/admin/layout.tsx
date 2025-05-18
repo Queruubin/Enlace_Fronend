@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { SideNav } from "./components/SideNav"
+import { SideNav } from "../shared/components/SideNav"
 
 export const metadata: Metadata = {
   title: "Admin",

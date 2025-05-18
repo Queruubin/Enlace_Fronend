@@ -1,5 +1,6 @@
 "use server"
 
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 export const actionPostLogin = async (formData: FormData) => {
@@ -17,4 +18,10 @@ export const actionPostLogin = async (formData: FormData) => {
   const dataUser = await response.json()
 
   redirect(`${dataUser === "admin" ? "/admin" : "/student"}`)
+}
+
+export const getRolFromCookie = async () => {
+  const _token = (await cookies()).get("token")?.value
+  // Decodificar JWT o consultar DB
+  return "admin"
 }

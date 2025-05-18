@@ -1,8 +1,8 @@
 "use client"
 
 import { Button, FormControl, Input, Option, Select } from "@mui/joy"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useState, useTransition } from "react"
 
 const materiasIngenieria = [
   // Materias comunes en ingeniería
@@ -63,12 +63,34 @@ const materiasIngenieria = [
 export function FilterTable() {
   const [subjectSelect, setSubjectSelect] = useState<string | null>(null)
   const [teacher, setTeacher] = useState<string>("")
-
+  const [typeUser, setTypeUser] = useState<string | null>("teachers")
+  const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const params = new URLSearchParams(searchParams)
+    if (subjectSelect) params.set("subject", subjectSelect)
+    else params.delete("subject")
+
+    if (teacher) params.set("name", teacher)
+    else params.delete("name")
+
+    if (typeUser) params.set("type_user", typeUser)
+
+    startTransition(() => {
+      router.push(`?${params.toString()}`)
+    })
+  }
 
   return (
-    <form className="flex flex-row flex-wrap w-full px-5 items-center justify-between">
-      <div className="flex flex-row items-center gap-x-5">
+    <form
+      className="flex flex-row flex-wrap w-full px-5 items-center justify-between"
+      onSubmit={handleSubmit}
+    >
+      <div className="flex flex-row flex-wrap items-center gap-x-5">
         <FormControl orientation="vertical" className="gap-x-10">
           <Select
             size="md"
@@ -88,8 +110,25 @@ export function FilterTable() {
           <Input
             value={teacher}
             onChange={(value) => setTeacher(value.target.value)}
-            placeholder="Profesor..."
+            placeholder={
+              typeUser === "teachers"
+                ? "Nombre del profesor"
+                : "Nombre del estudiante"
+            }
           />
+        </FormControl>
+        <FormControl orientation="vertical" className="gap-x-10">
+          <Select
+            size="md"
+            value={typeUser}
+            defaultValue="teachers"
+            className="w-56"
+            placeholder="Tipo de usuario"
+            onChange={(_, newValue) => setTypeUser(newValue)}
+          >
+            <Option value="teachers">Profesores</Option>
+            <Option value="students">Estudiantes</Option>
+          </Select>
         </FormControl>
         <Button type="submit" className="h-fit w-22">
           Filtrar
@@ -100,6 +139,7 @@ export function FilterTable() {
           variant="solid"
           color="success"
           type="button"
+          disabled={isPending}
           onClick={() => router.push("/admin/formTeacher")}
         >
           Crear nuevo profesor
